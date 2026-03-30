@@ -6,36 +6,37 @@
  * |_|    \__|(_)|_| \__,_||_.__/ |___/
  *
  * www.rt-labs.com
- * Copyright 2017 rt-labs AB, Sweden.
+ * Copyright 2025 rt-labs AB, Sweden.
  *
  * This software is dual-licensed under GPLv3 and a commercial
  * license. See the file LICENSE.md distributed with this software for
  * full license information.
  ********************************************************************/
 
-#ifndef VERSION_H
-#define VERSION_H
+#ifndef COAL_CAN_SYS_H
+#define COAL_CAN_SYS_H
 
-#define COPEN_GIT_REVISION "v1.1.0-5-g092e8582"
-
-#if !defined(CO_VERSION_BUILD) && defined(COPEN_GIT_REVISION)
-#define CO_VERSION_BUILD COPEN_GIT_REVISION
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-/* clang-format-off */
+#define OS_CHANNEL
 
-#define CO_VERSION_MAJOR 1
-#define CO_VERSION_MINOR 1
-#define CO_VERSION_PATCH 0
+typedef struct
+{
+   int handle;
+   void (*callback) (void * arg);
+   void * arg;
+} os_channel_t;
 
-#if defined(CO_VERSION_BUILD)
-#define CO_VERSION \
-   "1.1.0+"CO_VERSION_BUILD
-#else
-#define CO_VERSION \
-   "1.1.0"
+typedef struct os_filter
+{
+   uint32_t id;   /** Filter identifier */
+   uint32_t mask; /** Filter mask */
+} os_filter_t;
+
+#ifdef __cplusplus
+}
 #endif
 
-/* clang-format-on */
-
-#endif /* VERSION_H */
+#endif /* COAL_CAN_SYS_H */

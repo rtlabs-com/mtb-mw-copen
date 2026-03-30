@@ -13,11 +13,22 @@
  * full license information.
  ********************************************************************/
 
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+#include "FreeRTOSConfig.h"
+#include "FreeRTOS.h"
+
+/* add system specific types prior to including osal.h */
+#include "sys/osal_cc.h"
+#include "sys/osal_sys.h"
+
 #include "osal.h"
 
-#include <stdlib.h>
-
-#define TMO_TO_TICKS(ms) \
+#define TMO_TO_TICKS(ms)                                                       \
    ((ms == OS_WAIT_FOREVER) ? portMAX_DELAY : (ms) / portTICK_PERIOD_MS)
 
 void * os_malloc (size_t size)
@@ -30,28 +41,37 @@ void os_free (void * ptr)
    free (ptr);
 }
 
+static uint32_t thread_priority[] = {
+   0,
+   (configMAX_PRIORITIES * 1 / 7),
+   (configMAX_PRIORITIES * 2 / 7),
+   (configMAX_PRIORITIES * 3 / 7),
+   (configMAX_PRIORITIES * 4 / 7),
+   (configMAX_PRIORITIES * 5 / 7),
+   (configMAX_PRIORITIES * 6 / 7)};
+
 os_thread_t * os_thread_create (
    const char * name,
-   uint32_t priority,
+   os_thread_priority_t priority,
    size_t stacksize,
    void (*entry) (void * arg),
    void * arg)
 {
    TaskHandle_t xHandle = NULL;
+   BaseType_t status;
+
+   CC_ASSERT (priority <= OS_PRIORITY_MAX);
 
    /* stacksize in freertos is not in bytes but in stack depth, it should be
     * divided by the stack width */
-   configSTACK_DEPTH_TYPE stackdepth =
-      stacksize / sizeof (configSTACK_DEPTH_TYPE);
+   configSTACK_DEPTH_TYPE stackdepth = stacksize / sizeof (StackType_t);
 
-   if (xTaskCreate (entry, name, stackdepth, arg, priority, &xHandle) == pdPASS)
-   {
-      return (os_thread_t *)xHandle;
-   }
-   else
-   {
-      return NULL;
-   }
+   status =
+      xTaskCreate (entry, name, stackdepth, arg, thread_priority[priority], &xHandle);
+   CC_UNUSED (status);
+   CC_ASSERT (status == pdPASS);
+   CC_ASSERT (xHandle != NULL);
+   return (os_thread_t *)xHandle;
 }
 
 os_mutex_t * os_mutex_create (void)
@@ -81,7 +101,8 @@ void os_usleep (uint32_t us)
    vTaskDelay ((us / portTICK_PERIOD_MS) / 1000);
 }
 
-uint32_t os_get_current_time_us (void)
+/* allow override with high precision timer */
+__attribute__ ((weak)) uint32_t os_get_current_time_us (void)
 {
    return 1000 * (xTaskGetTickCount() / portTICK_PERIOD_MS);
 }
@@ -147,7 +168,7 @@ bool os_event_wait (os_event_t * event, uint32_t mask, uint32_t * value, uint32_
       TMO_TO_TICKS (time));
 
    *value &= mask;
-   return *value == 0;
+   return *value != 0;
 }
 
 void os_event_set (os_event_t * event, uint32_t value)
@@ -186,11 +207,13 @@ bool os_mbox_post (os_mbox_t * mbox, void * msg, uint32_t time)
 
    if (xPortIsInsideInterrupt())
    {
-   	   success = xQueueSendToBackFromISR ((QueueHandle_t)mbox, &msg, TMO_TO_TICKS (time));
+      BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+      success = xQueueSendToBackFromISR ((QueueHandle_t)mbox, &msg, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR (xHigherPriorityTaskWoken);
    }
    else
    {
-   	   success = xQueueSendToBack ((QueueHandle_t)mbox, &msg, TMO_TO_TICKS (time));
+      success = xQueueSendToBack ((QueueHandle_t)mbox, &msg, TMO_TO_TICKS (time));
    }
    return success != pdTRUE;
 }
@@ -241,20 +264,38 @@ void os_timer_set (os_timer_t * timer, uint32_t us)
 void os_timer_start (os_timer_t * timer)
 {
    /* Start timer by updating the period */
-   CC_ASSERT (
-      xTimerChangePeriod (
-         timer->handle,
-         (timer->us / portTICK_PERIOD_MS) / 1000,
-         portMAX_DELAY) == pdPASS);
+   BaseType_t status = xTimerChangePeriod (
+      timer->handle,
+      (timer->us / portTICK_PERIOD_MS) / 1000,
+      portMAX_DELAY);
+
+   CC_UNUSED (status);
+   CC_ASSERT (status == pdPASS);
 }
 
 void os_timer_stop (os_timer_t * timer)
 {
-   CC_ASSERT (xTimerStop (timer->handle, portMAX_DELAY) == pdPASS);
+   BaseType_t status = xTimerStop (timer->handle, portMAX_DELAY);
+   CC_UNUSED (status);
+   CC_ASSERT (status == pdPASS);
 }
 
 void os_timer_destroy (os_timer_t * timer)
 {
-   CC_ASSERT (xTimerDelete (timer->handle, portMAX_DELAY) == pdPASS);
+   BaseType_t status = xTimerDelete (timer->handle, portMAX_DELAY);
+   CC_UNUSED (status);
+   CC_ASSERT (status == pdPASS);
    free (timer);
+}
+
+__attribute__ ((weak)) uint32_t os_rand (void)
+{
+   /* fixme -- add hardware rand seed */
+   srand (xTaskGetTickCount());
+   return rand();
+}
+
+__attribute__ ((weak)) void os_system_reset (void)
+{
+   printf ("system reset not implemented\n");
 }

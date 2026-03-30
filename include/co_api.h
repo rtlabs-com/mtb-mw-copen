@@ -367,7 +367,7 @@ CO_EXPORT co_client_t * co_client_init (co_net_t * net);
  * Get next active node ID.
  *
  * This function returns the next active node ID, i.e. a node that has
- * sent an NMT bootup message on the network and has not failed its
+ * sent an NMT boot-up message on the network and has not failed its
  * error control protocol.
 
  * This function can be used to iterate over active nodes.

@@ -16,60 +16,58 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include "osal_log.h"
 #include "co_options.h"
 
-
 #ifndef LOG_LEVEL
-#define LOG_LEVEL (LOG_LEVEL_VERBOSE)
+#define LOG_LEVEL            (LOG_LEVEL_ERROR)
 #endif
 
 #ifndef CO_ALLOC_LOG
-#define CO_ALLOC_LOG (LOG_STATE_ON)
+#define CO_ALLOC_LOG         (LOG_STATE_ON)
 #endif
 
 #ifndef CO_CAN_LOG
-#define CO_CAN_LOG (LOG_STATE_ON)
+#define CO_CAN_LOG           (LOG_STATE_ON)
 #endif
 
 #ifndef CO_SDO_LOG
-#define CO_SDO_LOG (LOG_STATE_ON)
+#define CO_SDO_LOG           (LOG_STATE_ON)
 #endif
 
 #ifndef CO_OD_LOG
-#define CO_OD_LOG (LOG_STATE_ON)
+#define CO_OD_LOG            (LOG_STATE_ON)
 #endif
 
 #ifndef CO_NMT_LOG
-#define CO_NMT_LOG (LOG_STATE_ON)
+#define CO_NMT_LOG           (LOG_STATE_ON)
 #endif
 
 #ifndef CO_EMCY_LOG
-#define CO_EMCY_LOG (LOG_STATE_ON)
+#define CO_EMCY_LOG          (LOG_STATE_ON)
 #endif
 
 #ifndef CO_HEARTBEAT_LOG
-#define CO_HEARTBEAT_LOG (LOG_STATE_ON)
+#define CO_HEARTBEAT_LOG     (LOG_STATE_ON)
 #endif
 
 #ifndef CO_NODE_GUARD_LOG
-#define CO_NODE_GUARD_LOG (LOG_STATE_ON)
+#define CO_NODE_GUARD_LOG    (LOG_STATE_ON)
 #endif
 
 #ifndef CO_LSS_LOG
-#define CO_LSS_LOG (LOG_STATE_ON)
+#define CO_LSS_LOG           (LOG_STATE_ON)
 #endif
 
 #ifndef SDO_TIMEOUT
-#define SDO_TIMEOUT (100)
+#define SDO_TIMEOUT          (100)
 #endif
 
 #ifndef CO_THREAD_PRIO
-#define CO_THREAD_PRIO (6)
+#define CO_THREAD_PRIO       (6)
 #endif
 
 #ifndef CO_THREAD_STACK_SIZE
 #define CO_THREAD_STACK_SIZE (4096)
 #endif
 
-#endif /* OPTIONS_H */
+#endif  /* OPTIONS_H */

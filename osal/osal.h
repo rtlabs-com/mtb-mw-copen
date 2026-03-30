@@ -25,22 +25,18 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "sys/osal_sys.h"
 #include "sys/osal_cc.h"
-#include "osal_log.h"
 
-typedef enum os_thread_priority
-{
-    OS_PRIORITY_MIN         = 0,
-    OS_PRIORITY_LOW         = (OS_MAX_PRIORITIES * 1 / 7),
-    OS_PRIORITY_BELOWNORMAL = (OS_MAX_PRIORITIES * 2 / 7),
-    OS_PRIORITY_NORMAL      = (OS_MAX_PRIORITIES * 3 / 7),
-    OS_PRIORITY_ABOVENORMAL = (OS_MAX_PRIORITIES * 4 / 7),
-    OS_PRIORITY_HIGH        = (OS_MAX_PRIORITIES * 5 / 7),
-    OS_PRIORITY_REALTIME    = (OS_MAX_PRIORITIES * 6 / 7),
-    OS_PRIORITY_MAX         = OS_MAX_PRIORITIES - 1
-} os_thread_priority_t;
+#define OS_PRIORITY_MIN         0
+#define OS_PRIORITY_LOW         1
+#define OS_PRIORITY_BELOWNORMAL 2
+#define OS_PRIORITY_NORMAL      3
+#define OS_PRIORITY_ABOVENORMAL 4
+#define OS_PRIORITY_HIGH        5
+#define OS_PRIORITY_REALTIME    6
+#define OS_PRIORITY_MAX         OS_PRIORITY_REALTIME
 
+typedef uint8_t os_thread_priority_t;
 
 #ifndef MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -90,6 +86,8 @@ typedef void os_mbox_t;
 typedef void os_timer_t;
 #endif
 
+typedef uint64_t os_tick_t;
+
 void * os_malloc (size_t size);
 void os_free (void * ptr);
 
@@ -98,10 +96,11 @@ uint32_t os_get_current_time_us (void);
 
 os_tick_t os_tick_current (void);
 os_tick_t os_tick_from_us (uint32_t us);
+void os_tick_sleep (os_tick_t tick);
 
 os_thread_t * os_thread_create (
    const char * name,
-   uint32_t priority,
+   os_thread_priority_t priority,
    size_t stacksize,
    void (*entry) (void * arg),
    void * arg);
