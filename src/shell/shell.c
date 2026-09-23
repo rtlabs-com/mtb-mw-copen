@@ -346,6 +346,7 @@ static void shell_init (void (*init) (void))
    rte_shell_init("");
 
    setvbuf (stdout, NULL, _IONBF, 0);
+   setvbuf (stdin, NULL, _IONBF, 0);
 
    shell_state = SHELL_STATE_INIT;
    shell_cmdline_pos = 0u;
